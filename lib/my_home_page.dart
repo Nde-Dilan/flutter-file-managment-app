@@ -13,8 +13,6 @@ import 'package:flutter/services.dart';
 //Enable the user to open files
 import 'package:open_file/open_file.dart';
 
-import 'custom_app_bar.dart';
-
 //StatefulWidget means needs to hold some state, will change over time and with user interactions
 class MyHomePage extends StatefulWidget {
   final String title;
@@ -48,12 +46,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final FileManagerController controller = FileManagerController();
 
-  String currentLocation = '/';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(currentLocation: currentLocation),
+      appBar: appBar(context),
       body: FileManager(
         controller: controller,
         builder: (BuildContext context, List<FileSystemEntity> snapshot) {
@@ -75,8 +71,17 @@ class _MyHomePageState extends State<MyHomePage> {
                               height: 24,
                               fit: BoxFit.cover,
                             )
-                          : const Icon(Icons.feed_outlined,
-                              color: Color.fromARGB(58, 7, 5, 5)))
+                          : (entity.path.endsWith('.mp3') ||
+                                  entity.path.endsWith('.wav') ||
+                                  entity.path.endsWith('.m4a') ||
+                                  entity.path.endsWith('.ogg'))
+                              ? const Icon(
+                                  Icons.audiotrack,
+                                  size: 24,
+                                  color: Colors.blue,
+                                )
+                              : const Icon(Icons.feed_outlined,
+                                  color: Color.fromARGB(58, 7, 5, 5)))
                       : const Icon(Icons.folder, color: Colors.deepOrange),
                   title: Text(
                     FileManager.basename(entity, showFileExtension: true),
@@ -112,27 +117,15 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         },
       ),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: () async {
-      //     // print("pressed");
-      //     Permission.storage.request();
-      //     Navigator.pushAndRemoveUntil(
-      //         context,
-      //         MaterialPageRoute(
-      //             builder: (_) => const MyHomePage(title: "FIle Manager")),
-      //         (route) => false);
-      //   },
-      //   label: const Text("Request File Access Permission"),
-      // ),
     );
   }
 
-  void updateLocation(String newLocation) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        currentLocation = newLocation;
-      });
-    });
+  delete(FileSystemEntity entity) async {
+    await entity.delete();
+  }
+
+  rename(FileSystemEntity entity, String newName) async {
+    await entity.rename("newPath/$newName");
   }
 
   subTitle(FileSystemEntity entity) {
@@ -148,6 +141,207 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           return const Text("");
         }
+      },
+    );
+  }
+
+  appBar(BuildContext context) {
+    return AppBar(
+      actions: [
+        IconButton(
+          onPressed: () => createFolder(context),
+          icon: const Icon(
+            Icons.create_new_folder_outlined,
+          ),
+        ),
+        IconButton(
+          onPressed: () => sort(context),
+          icon: const Icon(
+            Icons.sort_rounded,
+          ),
+        ),
+        IconButton(
+          onPressed: () => selectStorage(context),
+          icon: const Icon(
+            Icons.sd_storage_rounded,
+          ),
+        ),
+      ],
+      title: ValueListenableBuilder(
+        valueListenable: controller.titleNotifier,
+        builder: (BuildContext context, String value, Widget? child) {
+          return Text(value);
+        },
+      ),
+      leading: IconButton(
+        onPressed: () async {
+          try {
+            await controller.goToParentDirectory();
+            print(controller.getCurrentDirectory);
+          } catch (e) {
+            print(e);
+          }
+        },
+        icon: const Icon(
+          Icons.arrow_back,
+        ),
+      ),
+    );
+  }
+
+  // Methods
+  selectStorage(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: FutureBuilder<List<Directory>>(
+              future: FileManager.getStorageList(),
+              builder: (context, snapshot) {
+                final List<FileSystemEntity> storgeList = snapshot.data!;
+                return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: storgeList
+                        .map((e) => ListTile(
+                              title: Text(FileManager.basename(e)),
+                              onTap: () {
+                                controller.openDirectory(e);
+                                Navigator.pop(context);
+                              },
+                            ))
+                        .toList());
+              }),
+        );
+      },
+    );
+  }
+
+  createFolder(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        var folderCreate = TextEditingController();
+        return Dialog(
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: TextField(
+                    controller: folderCreate,
+                  ),
+                ),
+                ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await FileManager.createFolder(
+                            controller.getCurrentPath, folderCreate.text);
+                        controller.setCurrentPath =
+                            "${controller.getCurrentPath}/${folderCreate.text}";
+                        Navigator.pop(context);
+                      } catch (e) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: const Text("Create Folders"))
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  sort(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        var folderCreate = TextEditingController();
+        return Dialog(
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text("Name"),
+                  onTap: () {
+                    controller.sortBy(SortBy.name);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: const Text("Size"),
+                  onTap: () {
+                    controller.sortBy(SortBy.size);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: const Text("Date"),
+                  onTap: () {
+                    controller.sortBy(SortBy.date);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: const Text("Type"),
+                  onTap: () {
+                    controller.sortBy(SortBy.type);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  options(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text("Name"),
+                  onTap: () {
+                    controller.sortBy(SortBy.name);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: const Text("Size"),
+                  onTap: () {
+                    controller.sortBy(SortBy.size);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: const Text("Date"),
+                  onTap: () {
+                    controller.sortBy(SortBy.date);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: const Text("Type"),
+                  onTap: () {
+                    controller.sortBy(SortBy.type);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }
