@@ -1,0 +1,30 @@
+<svg width="300" height="308" viewBox="0 0 300 308" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="150" cy="150" r="150" fill="#6350FF" fill-opacity="0.1"/>
+<rect x="78" y="93" width="154" height="116" rx="2" fill="#6350FF"/>
+<rect x="93" y="135" width="102" height="6" rx="1" fill="white" fill-opacity="0.2"/>
+<path d="M53 132.2C53 131.08 53 130.52 53.218 130.092C53.4097 129.716 53.7157 129.41 54.092 129.218C54.5198 129 55.0799 129 56.2 129H128.939C129.547 129 129.851 129 130.129 129.082C130.374 129.155 130.604 129.274 130.804 129.433C131.031 129.612 131.206 129.861 131.556 130.358L149.044 155.204C149.394 155.702 149.569 155.95 149.796 156.13C149.996 156.289 150.226 156.408 150.471 156.481C150.749 156.562 151.053 156.562 151.661 156.562H243.8C244.92 156.562 245.48 156.562 245.908 156.78C246.284 156.972 246.59 157.278 246.782 157.655C247 158.082 247 158.642 247 159.763V272.8C247 273.92 247 274.48 246.782 274.908C246.59 275.284 246.284 275.59 245.908 275.782C245.48 276 244.92 276 243.8 276H56.2C55.0799 276 54.5198 276 54.092 275.782C53.7157 275.59 53.4097 275.284 53.218 274.908C53 274.48 53 273.92 53 272.8V132.2Z" fill="#FDBE01"/>
+<rect x="154" y="253" width="66" height="8" rx="1" fill="white"/>
+<rect x="93" y="101" width="122" height="8" rx="1" fill="white" fill-opacity="0.2"/>
+<rect x="93" y="117" width="66" height="4" rx="1" fill="white" fill-opacity="0.2"/>
+<rect x="224" y="253" width="8" height="8" rx="1" fill="white"/>
+<circle cx="14" cy="251" r="4" fill="#FDBE01"/>
+<circle cx="211" cy="304" r="4" fill="#6350FF"/>
+<circle cx="286" cy="256" r="9" fill="#FDBE01"/>
+<circle cx="14" cy="57" r="9" fill="#6350FF"/>
+<circle cx="247" cy="190" r="6" fill="#6350FF"/>
+<g filter="url(#filter0_d_1_828)">
+<circle cx="259" cy="48" r="35" fill="#6350FF"/>
+<path d="M256.968 60.9337C260.289 60.933 263.514 59.8214 266.13 57.7757L274.354 66L277 63.3546L268.775 55.1303C270.822 52.5142 271.935 49.2884 271.935 45.9669C271.935 37.7145 265.22 31 256.968 31C248.715 31 242 37.7145 242 45.9669C242 54.2192 248.715 60.9337 256.968 60.9337ZM256.968 34.7417C263.159 34.7417 268.193 39.7762 268.193 45.9669C268.193 52.1575 263.159 57.192 256.968 57.192C250.777 57.192 245.742 52.1575 245.742 45.9669C245.742 39.7762 250.777 34.7417 256.968 34.7417Z" fill="white"/>
+</g>
+<defs>
+<filter id="filter0_d_1_828" x="217" y="12" width="80" height="80" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dx="-2" dy="4"/>
+<feGaussianBlur stdDeviation="2.5"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.388235 0 0 0 0 0.313726 0 0 0 0 1 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_828"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_828" result="shape"/>
+</filter>
+</defs>
+</svg>

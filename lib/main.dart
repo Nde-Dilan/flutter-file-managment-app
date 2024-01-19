@@ -6,7 +6,8 @@
 import 'package:flutter/material.dart';
 //permission_handler
 import 'package:permission_handler/permission_handler.dart';
-import 'my_home_page.dart';
+import 'landing_page.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -19,9 +20,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
+          // fontFamily: 'InkFree',
         ),
         home: FutureBuilder<PermissionStatus>(
           future: Permission.storage.request(),
@@ -29,7 +32,7 @@ class MyApp extends StatelessWidget {
               (BuildContext context, AsyncSnapshot<PermissionStatus> snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               if (snapshot.data?.isGranted ?? false) {
-                return const MyHomePage(title: 'File Manager');
+                return const WelcomePage();
               } else {
                 return const PermissionDeniedPage();
               }
@@ -53,6 +56,7 @@ class LoadingPage extends StatelessWidget {
     );
   }
 }
+
 class PermissionDeniedPage extends StatelessWidget {
   const PermissionDeniedPage({super.key});
   @override
@@ -64,4 +68,3 @@ class PermissionDeniedPage extends StatelessWidget {
     );
   }
 }
-

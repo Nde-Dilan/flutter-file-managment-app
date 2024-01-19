@@ -1,5 +1,5 @@
 export 'package:file_manager_flutter/my_home_page.dart';
-
+import 'package:intl/intl.dart';
 import 'dart:io';
 
 // import 'package:file_manager/controller/file_manager_controller.dart';
@@ -15,9 +15,8 @@ import 'package:open_file/open_file.dart';
 
 //StatefulWidget means needs to hold some state, will change over time and with user interactions
 class MyHomePage extends StatefulWidget {
-  final String title;
 
-  const MyHomePage({super.key, required this.title});
+   MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -50,6 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(context),
+      // drawer: Drawer(),
       body: FileManager(
         controller: controller,
         builder: (BuildContext context, List<FileSystemEntity> snapshot) {
@@ -111,6 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       SystemNavigator.pop();
                     }
                   },
+                  onLongPress: () => {options(context, entity)},
                 ),
               );
             },
@@ -128,6 +129,11 @@ class _MyHomePageState extends State<MyHomePage> {
     await entity.rename("newPath/$newName");
   }
 
+  String formatDate(String dateStr) {
+    DateTime date = DateTime.parse(dateStr);
+    return DateFormat('dd/MM/yyyy HH:mm').format(date);
+  }
+
   subTitle(FileSystemEntity entity) {
     return FutureBuilder(
       future: entity.stat(),
@@ -136,8 +142,14 @@ class _MyHomePageState extends State<MyHomePage> {
           if (entity is File) {
             int size = snapshot.data!.size;
             return Text(FileManager.formatBytes(size));
+          } else if (entity is Directory) {
+            int itemCount = entity.listSync().length;
+            String dateModified = "${snapshot.data!.modified}";
+
+            return Text(
+                "${itemCount != 0 ? itemCount : 'No'} items                                 ${formatDate(dateModified)}");
           }
-          return Text("${snapshot.data!.modified}");
+          return const Text("");
         } else {
           return const Text("");
         }
@@ -177,9 +189,8 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () async {
           try {
             await controller.goToParentDirectory();
-            print(controller.getCurrentDirectory);
           } catch (e) {
-            print(e);
+            // print(e);
           }
         },
         icon: const Icon(
@@ -237,14 +248,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       try {
                         await FileManager.createFolder(
                             controller.getCurrentPath, folderCreate.text);
-                        controller.setCurrentPath =
-                            "${controller.getCurrentPath}/${folderCreate.text}";
+                        //controller.setCurrentPath ="${controller.getCurrentPath}/${folderCreate.text}";
                         Navigator.pop(context);
                       } catch (e) {
                         Navigator.pop(context);
                       }
                     },
-                    child: const Text("Create Folders"))
+                    child: const Text("Create Folder"))
               ],
             ),
           ),
@@ -300,7 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  options(BuildContext context) async {
+  options(BuildContext context, FileSystemEntity entity) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -311,16 +321,13 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  title: const Text("Name"),
-                  onTap: () {
-                    controller.sortBy(SortBy.name);
-                    Navigator.pop(context);
-                  },
+                  title: Text("Path:${entity.path}"),
                 ),
                 ListTile(
-                  title: const Text("Size"),
-                  onTap: () {
-                    controller.sortBy(SortBy.size);
+                  title: const Text("Delete"),
+                  onTap: () async {
+                    await entity.delete();
+
                     Navigator.pop(context);
                   },
                 ),
