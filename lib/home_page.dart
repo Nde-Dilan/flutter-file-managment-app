@@ -97,8 +97,8 @@ class _HomeState extends State<Home> {
 
   Container storageSection(String name, String storage, String iconPath) {
     return Container(
-      width: 311,
-      height: 93,
+      width: 341,
+      height: 99,
       decoration: BoxDecoration(
         color: const Color(0xFF6350FF).withOpacity(0.15),
         borderRadius: BorderRadius.circular(20),
@@ -109,8 +109,8 @@ class _HomeState extends State<Home> {
           Row(
             children: [
               Container(
-                width: 25,
-                height: 25,
+                width: 35,
+                height: 35,
                 padding: const EdgeInsets.only(left: 10, top: 10),
                 decoration: const BoxDecoration(
                     shape: BoxShape.rectangle,
@@ -126,11 +126,11 @@ class _HomeState extends State<Home> {
               ),
               Text(
                 name,
-                style: TextStyle(fontSize: 22, color: Color(0xff6350FF)),
+                style: const TextStyle(fontSize: 22, color: Color(0xff6350FF)),
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           Padding(
@@ -149,7 +149,7 @@ class _HomeState extends State<Home> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -158,7 +158,7 @@ class _HomeState extends State<Home> {
                     onTap: () {
                       print("Explore button clicked");
                     },
-                    child: Text("Explore")),
+                    child: const Text("Explore")),
               ],
             ),
           )
@@ -221,8 +221,10 @@ class _HomeState extends State<Home> {
             itemBuilder: (context, index) {
               return GestureDetector(
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => MyHomePage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const MyHomePage()));
                   },
                   child: Container(
                       // height: 90,

@@ -39,6 +39,8 @@ dependencies:
   intl: ^0.17.0
   permission_handler:
   flutter_svg: ^2.0.9
+  url_launcher: ^6.2.3
+  modal_bottom_sheet: ^2.1.2
 
 dev_dependencies:
   flutter_test:

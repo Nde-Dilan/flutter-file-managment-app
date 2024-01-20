@@ -16,7 +16,7 @@ import 'package:open_file/open_file.dart';
 //StatefulWidget means needs to hold some state, will change over time and with user interactions
 class MyHomePage extends StatefulWidget {
 
-   MyHomePage({super.key});
+   const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();

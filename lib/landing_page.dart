@@ -1,6 +1,7 @@
 import 'package:file_manager_flutter/Home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -8,9 +9,7 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Welcome'),
-      ),
+      appBar: AppBar(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -54,29 +53,43 @@ class WelcomePage extends StatelessWidget {
                           color: Color.fromARGB(255, 0, 0, 0),
                           fontWeight: FontWeight.w500)),
                 )),
-            const SizedBox(
-                width: 302,
-                height: 84,
-                child: Center(
-                  child: Text("Privacy Policy and Terms & conditions",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 15,
-                          color: Color(0xff6350FF), //6350FF
-                          fontWeight: FontWeight.w500)),
-                )),
+            SizedBox(
+              width: 302,
+              height: 84,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    // Privacy Policy
+                    buildClickableText(
+                      'Privacy Policy',
+                      context,
+                    ),
+
+                    const Text(" and "),
+
+                    // Terms & Conditions
+                    buildClickableText(
+                      'Terms & Conditions',
+                      context,
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(
               height: 8,
             ),
             TextButton(
               style: const ButtonStyle(
+                  minimumSize: MaterialStatePropertyAll(Size(303, 54)),
                   backgroundColor: MaterialStatePropertyAll(Color(0xff6350FF))),
               onPressed: () => {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => const Home()))
               },
               child: const Text(
-                "Get Started",
+                "Get Stted",
                 style: TextStyle(
                     fontSize: 15,
                     color: Color(0xffFFFFFF), //6350FF
@@ -86,6 +99,31 @@ class WelcomePage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  buildClickableText(String s, BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showMaterialModalBottomSheet(
+          context: context,
+          builder: (context) => Container(
+            child: const Text(
+              "Get Started",
+              style: TextStyle(
+                  fontSize: 15,
+                  color: Color(0xffFFFFFF), //6350FF
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
+        ); // Open the URL when the text is tapped
+      },
+      child: Text(s,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              fontSize: 15,
+              color: Color(0xff6350FF), //6350FF
+              fontWeight: FontWeight.w500)),
     );
   }
 }
