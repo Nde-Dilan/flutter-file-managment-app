@@ -1,22 +1,25 @@
-export 'package:file_manager_flutter/my_home_page.dart';
+export 'package:file_manager_flutter/folder_listing.dart';
+import 'package:file_manager_flutter/home_page.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 
-// import 'package:file_manager/controller/file_manager_controller.dart';
 import 'package:file_manager/file_manager.dart';
 //For UI Stuff
 import 'package:flutter/material.dart';
-//permission_handler
-// import 'package:permission_handler/permission_handler.dart';
 //You can find the SystemNavigator.pop() here to close the app (except if ur on IOS)
 import 'package:flutter/services.dart';
 //Enable the user to open files
 import 'package:open_file/open_file.dart';
 
-//StatefulWidget means needs to hold some state, will change over time and with user interactions
-class MyHomePage extends StatefulWidget {
+enum StorageType {
+  internal,
+  external,
+}
 
-   const MyHomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  // to know what shoulb be displayed, internal or external?
+  final StorageType storageType;
+  const MyHomePage({super.key, required this.storageType});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -27,91 +30,45 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    // requestStoragePermission(context);
   }
 
-  /*void requestStoragePermission(BuildContext context) async {
-    PermissionStatus status = await Permission.storage.request();
-    if (!status.isGranted) {
-      SystemNavigator.pop();
-    }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => MyHomePage(title: 'File Manager')),
-    );
-  }
-*/
+//FileManager is a wonderful widget that allows you to manage files and folders, pick files and folders, and do a lot more. Designed to feel like part of the Flutter framework.
 
+/*https://github.com/DevsOnFlutter/file_manager/blob/main/README.md */
   final FileManagerController controller = FileManagerController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBar(context),
-      // drawer: Drawer(),
+      appBar: appBar(context), //the app bar func
       body: FileManager(
         controller: controller,
         builder: (BuildContext context, List<FileSystemEntity> snapshot) {
+          //List of files/folderds found inside the storage
           final List<FileSystemEntity> entities = snapshot;
           return ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
             itemCount: entities.length,
             itemBuilder: (BuildContext context, int index) {
+              //Single file or directory
               FileSystemEntity entity = entities[index];
               return Card(
                 child: ListTile(
-                  leading: FileManager.isFile(entity)
-                      ? (entity.path.endsWith('.jpg') ||
-                              entity.path.endsWith('.png') ||
-                              entity.path.endsWith('.jpeg')
-                          ? Image.file(
-                              File(entity.path),
-                              width: 24,
-                              height: 24,
-                              fit: BoxFit.cover,
-                            )
-                          : (entity.path.endsWith('.mp3') ||
-                                  entity.path.endsWith('.wav') ||
-                                  entity.path.endsWith('.m4a') ||
-                                  entity.path.endsWith('.ogg'))
-                              ? const Icon(
-                                  Icons.audiotrack,
-                                  size: 24,
-                                  color: Colors.blue,
-                                )
-                              : const Icon(Icons.feed_outlined,
-                                  color: Color.fromARGB(58, 7, 5, 5)))
-                      : const Icon(Icons.folder, color: Colors.deepOrange),
+                  leading: fileOrFolder(entity),
                   title: Text(
                     FileManager.basename(entity, showFileExtension: true),
                   ),
-                  subtitle: subTitle(entity),
+                  subtitle: subTitle(entity), // to format the name
                   onTap: () async {
-                    // delete  a folder or file
-                    // await entity.delete();
-
-                    // rename a folder or file
-                    // await entity.rename("newPath");
-
-                    //check exists or not
-                    // await entity.exists();
-
-                    //get data of folder or file
-                    // DateTime date = (await entity.stat()).modified;
-
                     if (FileManager.isDirectory(entity)) {
-                      controller.openDirectory(entity);
-                      // updateLocation(entity.path);
-                      // setState(() {});
+                      handleDirectory(entity);
                     } else if (FileManager.isFile(entity)) {
                       OpenFile.open(entity.path);
                     } else {
-                      //close the app
                       SystemNavigator.pop();
                     }
                   },
-                  onLongPress: () => {options(context, entity)},
+                  onLongPress: () => {fileOrFolderProps(context, entity)},
                 ),
               );
             },
@@ -121,7 +78,10 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  // Methods
+
   delete(FileSystemEntity entity) async {
+    controller.goToParentDirectory();
     await entity.delete();
   }
 
@@ -129,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await entity.rename("newPath/$newName");
   }
 
-  String formatDate(String dateStr) {
+  formatDate(String dateStr) {
     DateTime date = DateTime.parse(dateStr);
     return DateFormat('dd/MM/yyyy HH:mm').format(date);
   }
@@ -153,6 +113,69 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           return const Text("");
         }
+      },
+    );
+  }
+
+  renameFolder(BuildContext context, FileSystemEntity entity) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        var folderCreate = TextEditingController();
+        return Dialog(
+          child: Container(
+            // height: 220,
+            decoration: BoxDecoration(color: Color(0xfff6350FF)),
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text("Enter New Folder Name"),
+                ),
+                ListTile(
+                  title: TextField(
+                      controller: folderCreate,
+                      decoration: InputDecoration(
+                        hintText: 'New Name',
+                        hintStyle: TextStyle(
+                          color: Color.fromARGB(218, 241, 241, 241)
+                              .withOpacity(0.19),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 255, 255, 255),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(3),
+                            borderSide: BorderSide.none),
+                      )),
+                ),
+                const SizedBox(
+                  height: 53,
+                ),
+                Row(
+                  children: [
+                    ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            entity.rename(folderCreate.text);
+                            Navigator.pop(context);
+                          } catch (e) {
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: const Text("Rename Folder")),
+                    const SizedBox(
+                      width: 80,
+                    ),
+                    ElevatedButton(
+                        onPressed: () async {}, child: const Text("Cancel"))
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }
@@ -188,9 +211,16 @@ class _MyHomePageState extends State<MyHomePage> {
       leading: IconButton(
         onPressed: () async {
           try {
-            await controller.goToParentDirectory();
+            print("e");
+            if (await controller.isRootDirectory()) {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Home()));
+            }
+            controller.goToParentDirectory();
           } catch (e) {
-            // print(e);
+            print(e);
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => const Home()));
           }
         },
         icon: const Icon(
@@ -200,7 +230,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // Methods
   selectStorage(BuildContext context) {
     showDialog(
       context: context,
@@ -234,27 +263,56 @@ class _MyHomePageState extends State<MyHomePage> {
         var folderCreate = TextEditingController();
         return Dialog(
           child: Container(
+            // height: 220,
+            decoration: BoxDecoration(color: Color(0xfff6350FF)),
             padding: const EdgeInsets.all(10),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  title: TextField(
-                    controller: folderCreate,
-                  ),
+                  title: Text("Enter Folder Name"),
                 ),
-                ElevatedButton(
-                    onPressed: () async {
-                      try {
-                        await FileManager.createFolder(
-                            controller.getCurrentPath, folderCreate.text);
-                        //controller.setCurrentPath ="${controller.getCurrentPath}/${folderCreate.text}";
-                        Navigator.pop(context);
-                      } catch (e) {
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: const Text("Create Folder"))
+                ListTile(
+                  title: TextField(
+                      controller: folderCreate,
+                      decoration: InputDecoration(
+                        hintText: 'New Folder',
+                        hintStyle: TextStyle(
+                          color: Color.fromARGB(218, 241, 241, 241)
+                              .withOpacity(0.19),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 255, 255, 255),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(3),
+                            borderSide: BorderSide.none),
+                      )),
+                ),
+                const SizedBox(
+                  height: 53,
+                ),
+                Row(
+                  children: [
+                    ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            await FileManager.createFolder(
+                                controller.getCurrentPath, folderCreate.text);
+                            //controller.setCurrentPath ="${controller.getCurrentPath}/${folderCreate.text}";
+                            Navigator.pop(context);
+                          } catch (e) {
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: const Text("Create Folder")),
+                    const SizedBox(
+                      width: 80,
+                    ),
+                    ElevatedButton(
+                        onPressed: () async {}, child: const Text("Cancel"))
+                  ],
+                ),
               ],
             ),
           ),
@@ -267,7 +325,6 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        var folderCreate = TextEditingController();
         return Dialog(
           child: Container(
             padding: const EdgeInsets.all(10),
@@ -310,7 +367,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  options(BuildContext context, FileSystemEntity entity) async {
+  fileOrFolderProps(BuildContext context, FileSystemEntity entity) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -329,6 +386,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     await entity.delete();
 
                     Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: const Text("Rename"),
+                  onTap: () async {
+                    createFolder(context);
                   },
                 ),
                 ListTile(
@@ -351,5 +414,41 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       },
     );
+  }
+
+  void handleDirectory(FileSystemEntity entity) {
+    switch (widget.storageType) {
+      case StorageType.internal:
+        controller.openDirectory(entity);
+        break;
+      case StorageType.external:
+        controller.openDirectory(entity);
+        break;
+    }
+  }
+
+  fileOrFolder(FileSystemEntity entity) {
+    return FileManager.isFile(entity)
+        ? (entity.path.endsWith('.jpg') ||
+                entity.path.endsWith('.png') ||
+                entity.path.endsWith('.jpeg')
+            ? Image.file(
+                File(entity.path),
+                width: 24,
+                height: 24,
+                fit: BoxFit.cover,
+              )
+            : (entity.path.endsWith('.mp3') ||
+                    entity.path.endsWith('.wav') ||
+                    entity.path.endsWith('.m4a') ||
+                    entity.path.endsWith('.ogg'))
+                ? const Icon(
+                    Icons.audiotrack,
+                    size: 24,
+                    color: Colors.blue,
+                  )
+                : const Icon(Icons.feed_outlined,
+                    color: Color.fromARGB(58, 7, 5, 5)))
+        : const Icon(Icons.folder, color: Colors.deepOrange);
   }
 }

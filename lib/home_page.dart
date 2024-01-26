@@ -1,7 +1,16 @@
+import 'dart:io';
+
+import 'package:file_manager/file_manager.dart';
 import 'package:file_manager_flutter/models/category_model.dart';
-import 'package:file_manager_flutter/my_home_page.dart';
+import 'package:file_manager_flutter/folder_listing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'package:file_manager_flutter/pages/image_page.dart'; // Import your pages
+import 'package:file_manager_flutter/pages/video_page.dart';
+import 'package:file_manager_flutter/pages/music_page.dart';
+import 'package:file_manager_flutter/pages/cloud_page.dart';
+import 'package:file_manager_flutter/pages/download_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -12,92 +21,137 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<CategoryModel> categories = [];
+  final FileManagerController controller = FileManagerController();
+  final Future<List<Directory>> storgeList = FileManager.getStorageList();
 
   void _getCategories() {
+    // print(storgeList);
     categories = CategoryModel.getCategories();
   }
 
   @override
   void initState() {
+    super.initState();
     _getCategories();
   }
+//TODO: Add a method as a prop to the constructor of the model to change the onTap behavior
 
   @override
   Widget build(BuildContext context) {
     _getCategories();
     return Scaffold(
       appBar: appBarFunction(context),
-      body: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        inputSearch(),
-        const SizedBox(
-          height: 40,
-        ),
-        storageSection(
-            "Internal Storage", "64 Gb out of 128 Gb", "mobile_icon"),
-        const SizedBox(
-          height: 30,
-        ),
-        storageSection("External Storage", "6 Gb out of 28 Gb", "sdcard"),
-        const SizedBox(
-          height: 40,
-        ),
-        const Padding(
-          padding: EdgeInsets.only(left: 15),
-          child: Text(
-            'Category',
-            style: TextStyle(fontSize: 29, fontWeight: FontWeight.bold),
+      body: SingleChildScrollView(
+          child: Center(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          inputSearch(),
+          const SizedBox(
+            height: 40,
+          ),
+          storageSection(
+              "Internal Storage", "64 Gb out of 128 Gb", "mobile_icon", 0.50),
+          const SizedBox(
+            height: 30,
+          ),
+          storageSection(
+              "External Storage", "6 Gb out of 28 Gb", "sdcard", 0.2142),
+          const SizedBox(
+            height: 40,
+          ),
+          const Padding(
+            padding: EdgeInsets.only(left: 15),
+            child: Text(
+              'Category',
+              style: TextStyle(fontSize: 29, fontWeight: FontWeight.bold),
+            ),
+          ),
+          categorySection(0),
+          categorySection(3),
+          const SizedBox(height: 40),
+          const Padding(
+            padding: EdgeInsets.only(left: 1),
+            child: Text(
+              'Recently viewed',
+              style: TextStyle(fontSize: 29, fontWeight: FontWeight.bold),
+            ),
+          ),
+          recentFolderSection(),
+          const SizedBox(
+            height: 200,
+          ),
+        ]),
+      )),
+      bottomNavigationBar: bottomNavigationBar(),
+      floatingActionButton: GestureDetector(
+        onTap: () {},
+        child: Container(
+          width: 198,
+          height: 198,
+          decoration: const BoxDecoration(
+              shape: BoxShape.rectangle,
+              color: Color.fromARGB(31, 255, 255, 255)),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 30.0),
+            child: SvgPicture.asset("assets/icons/add_folder.svg"),
           ),
         ),
-        categorySection(0),
-        categorySection(3),
-        const SizedBox(height: 40),
-        const Padding(
-          padding: EdgeInsets.only(left: 15),
-          child: Text(
-            'Recently viewed',
-            style: TextStyle(fontSize: 29, fontWeight: FontWeight.bold),
-          ),
-        ),
-        RecentFolderSection(),
-      ]),
-      bottomNavigationBar: BottomNavigationBar(
-          // backgroundColor: Color(0xFF6350FF).withOpacity(0.15),
-          items: [
-            BottomNavigationBarItem(
-              label: "Music",
-              icon: Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    color: Color.fromARGB(31, 255, 255, 255)),
-                child: Padding(
-                  padding: const EdgeInsets.all(0.0),
-                  child: SvgPicture.asset("assets/icons/music.svg"),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              label: "Cloud",
-              icon: Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    color: Color.fromARGB(31, 255, 255, 255)),
-                child: Padding(
-                  padding: const EdgeInsets.all(0.0),
-                  child: SvgPicture.asset("assets/icons/cloud.svg"),
-                ),
-              ),
-            ),
-          ]),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  Container storageSection(String name, String storage, String iconPath) {
+  BottomNavigationBar bottomNavigationBar() {
+    return BottomNavigationBar(
+        // backgroundColor: Color(0xFF6350FF).withOpacity(0.15),
+        items: [
+          BottomNavigationBarItem(
+            label: "Home",
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: Padding(
+                padding: const EdgeInsets.all(0.0),
+                child: SvgPicture.asset("assets/icons/home.svg"),
+              ),
+            ),
+          ),
+          BottomNavigationBarItem(
+            label: "Folder",
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: Padding(
+                padding: const EdgeInsets.all(0.0),
+                child: SvgPicture.asset("assets/icons/folder_bottom.svg"),
+              ),
+            ),
+          ),
+          BottomNavigationBarItem(
+            label: " ",
+            icon: SizedBox(
+              width: 28,
+              height: 28,
+              child: SvgPicture.asset("assets/icons/mobile_icon.svg"),
+            ),
+          ),
+          BottomNavigationBarItem(
+            label: "Settings",
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: Padding(
+                padding: const EdgeInsets.all(0.0),
+                child: SvgPicture.asset("assets/icons/settings.svg"),
+              ),
+            ),
+          ),
+        ]);
+  }
+
+  Container storageSection(
+      String name, String storage, String iconPath, double? spaceLeft) {
     return Container(
-      width: 341,
+      width: 304,
       height: 99,
       decoration: BoxDecoration(
         color: const Color(0xFF6350FF).withOpacity(0.15),
@@ -124,9 +178,16 @@ class _HomeState extends State<Home> {
                 width: 12,
                 height: 5,
               ),
-              Text(
-                name,
-                style: const TextStyle(fontSize: 22, color: Color(0xff6350FF)),
+              GestureDetector(
+                onTap: () {
+                  // controller.openDirectory(e);
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  name,
+                  style:
+                      const TextStyle(fontSize: 22, color: Color(0xff6350FF)),
+                ),
               ),
             ],
           ),
@@ -134,29 +195,37 @@ class _HomeState extends State<Home> {
             height: 10,
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 8.0),
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0),
             child: Row(
               children: [
-                Container(
-                  width: 295,
+                SizedBox(
+                  width: 285,
                   height: 5,
-                  padding: const EdgeInsets.only(left: 55, top: 10),
-                  decoration: const BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Color.fromARGB(31, 0, 0, 0)),
-                )
+                  // padding: const EdgeInsets.only(left: 55, top: 10),
+                  child: LinearProgressIndicator(
+                    value: spaceLeft,
+                    color: const Color(0xFF6350FF),
+                    semanticsLabel: 'Linear progress space indicator',
+                  ),
+                ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(08.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(storage),
                 GestureDetector(
                     onTap: () {
-                      print("Explore button clicked");
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyHomePage(
+                                  storageType: name == "Internal Storage"
+                                      ? StorageType.internal
+                                      : StorageType.external)));
                     },
                     child: const Text("Explore")),
               ],
@@ -167,7 +236,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Row RecentFolderSection() {
+  Row recentFolderSection() {
     return Row(
       children: [
         Container(
@@ -212,7 +281,7 @@ class _HomeState extends State<Home> {
           child: ListView.separated(
             itemCount: categories.length - 3,
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.only(left: 45),
+            padding: const EdgeInsets.all(2),
             separatorBuilder: (context, index) {
               return const SizedBox(
                 width: 25,
@@ -221,10 +290,49 @@ class _HomeState extends State<Home> {
             itemBuilder: (context, index) {
               return GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const MyHomePage()));
+                    switch (categories[index + step].path) {
+                      case '/image':
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const ImagePage()));
+                        break;
+                      case '/video':
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const VideoPage()));
+                        break;
+                      case '/music':
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const MusicPage()));
+                        break;
+                      case '/document':
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const MyHomePage(
+                                      storageType: StorageType.internal,
+                                    )));
+                        break;
+                      case '/cloud':
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const CloudPage()));
+                        break;
+                      case '/download':
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const DownloadPage()));
+                        break;
+                      default:
+                        // Handle unknown paths or add additional cases as needed
+                        break;
+                    }
                   },
                   child: Container(
                       // height: 90,
